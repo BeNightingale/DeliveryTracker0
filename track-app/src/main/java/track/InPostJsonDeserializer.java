@@ -1,6 +1,7 @@
 package track;
 
 import com.google.gson.*;
+import track.model.Deliverer;
 import track.model.dto.DeliveryDto;
 import track.model.dto.StatusChange;
 
@@ -8,6 +9,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static track.DeserializerHelper.getAsStringOrNull;
 
 public class InPostJsonDeserializer implements JsonDeserializer<DeliveryDto> {
 
@@ -41,7 +44,10 @@ public class InPostJsonDeserializer implements JsonDeserializer<DeliveryDto> {
                 final String changedStatus = getAsStringOrNull(changedStatusElem);
                 final JsonElement changeTimestampElem = arrayObject.get("datetime");
                 final String changeTimestamp = getAsStringOrNull(changeTimestampElem);
-                final StatusChange statusChange = new StatusChange(changedStatus, changeTimestamp);
+                final StatusChange statusChange = new StatusChange(
+                        changedStatus,
+                        DeserializerHelper.parseStringToLocalDateTime(changeTimestamp.substring(0, 23))
+                );
                 statusChangesList.add(statusChange);
             }
         }
@@ -49,11 +55,7 @@ public class InPostJsonDeserializer implements JsonDeserializer<DeliveryDto> {
                 .deliveryNumber(deliveryNumber)
                 .deliveryStatus(status)
                 .statusChangesList(statusChangesList)
-                .deliverer("InPost")
+                .deliverer(Deliverer.INPOST)
                 .build();
-    }
-
-    public String getAsStringOrNull(JsonElement jsonElement) {
-        return jsonElement == null ? null : jsonElement.getAsString();
     }
 }

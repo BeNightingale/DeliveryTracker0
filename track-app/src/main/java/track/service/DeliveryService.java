@@ -1,17 +1,19 @@
 package track.service;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import track.StatusMapper;
+import track.model.Deliverer;
 import track.model.Delivery;
 import track.model.DeliveryStatus;
 import track.model.dto.DeliveryDto;
 import track.repository.DeliveryRepository;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+
+import static track.model.Deliverer.INPOST;
 
 @Service
 @AllArgsConstructor
@@ -28,7 +30,7 @@ public class DeliveryService {
         }
         int counter = 0;
         for (DeliveryDto dto : deliveryDtoList) {
-            counter +=updateDeliveryStatus(dto);
+            counter += updateDeliveryStatus(dto);
         }
         return counter;
     }
@@ -38,7 +40,7 @@ public class DeliveryService {
             log.debug("DeliveryDto is null.");
             return 0;
         }
-        final Delivery delivery = deliveryRepository.findDeliveryByDeliveryNumber(deliveryDto.getDeliveryNumber()).orElse(null);
+        final Delivery delivery = deliveryRepository.findDeliveryByDeliveryNumberAndDeliverer(deliveryDto.getDeliveryNumber(), INPOST);
         if (delivery == null) {
             return 0;
         }
@@ -50,9 +52,5 @@ public class DeliveryService {
         delivery.setDeliveryStatus(deliveryDtoStatus);
         deliveryRepository.save(delivery);
         return 1;
-    }
-
-    private List<String> getDeliveriesNumbers(List<DeliveryDto> deliveryDtoList) {
-        return deliveryDtoList.stream().filter(Objects::nonNull).map(DeliveryDto::getDeliveryNumber).toList();
     }
 }
