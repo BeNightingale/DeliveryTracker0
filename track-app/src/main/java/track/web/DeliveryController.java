@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import track.InPostJsonDeserializer;
 import track.PolishPostJsonDeserializer;
-import track.StatusMapper;
+import track.InPostStatusMapper;
 import track.model.Deliverer;
 import track.model.Delivery;
 import track.model.dto.DeliveryDto;
@@ -45,7 +45,7 @@ public class DeliveryController {
     private final Gson polishPostGson = initGson(new PolishPostJsonDeserializer());
 
 
-    // ------------ operacje dotyczące tylko bazy danych aplikacji ---------------------
+    // ------------ operacje dotyczące tylko bazy danych aplikacji DeliveryTracker ---------------------
 
     /**
      * @return liczba wszystkich przesyłek zapisanych w tabeli deliveries
@@ -75,7 +75,7 @@ public class DeliveryController {
      */
     @PostMapping("/deliveries")
     public ResponseEntity<Object> addDelivery(
-            @Validated @RequestBody DeliveryDto deliveryDto,
+            @Validated @RequestBody DeliveryDto deliveryDto, // tylko podstawowe pola: numer_przesyłki, dostawca, opis, co zawiera przesyłka, status przewoźnika lub null, jeśli nieznany
             Errors errors,
             HttpServletRequest httpRequest) {
         if (deliveryDto == null) {
@@ -92,16 +92,18 @@ public class DeliveryController {
         try {
             final String deliveryNumber = deliveryDto.getDeliveryNumber();
             final Deliverer deliverer = deliveryDto.getDeliverer();
+            // Sprawdzenie, czy w bazie nie ma takiej przesyłki od tego dostawcy.
             final Delivery deliveriesWithNumber = deliveryRepository.findDeliveryByDeliveryNumberAndDeliverer(
                     deliveryNumber, deliverer);
             if (deliveriesWithNumber == null) {
+                // Jeśli nie ma, to wpisujemy do bazy danych.
                 final Delivery delivery = deliveryRepository.save(deliveryDto.toDelivery());
                 log.debug("Delivery inserted into database: {}.", delivery);
                 return ResponseEntity.ok(delivery);
             }
             log.debug("Inserting delivery into database wasn't possible, because the parcel with the deliveryNumber {}" +
                     " of the deliverer {}, is already tracked in database.", deliveryNumber, deliverer);
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(String.format(
                             "The parcel with the deliveryNumber %s of the deliverer %s is already tracked in database.",
                             deliveryNumber, deliverer)
@@ -213,7 +215,7 @@ public class DeliveryController {
     @GetMapping("/current_statuses") // aktualizuje w bazie statusy wszystkim aktywnym przesyłkom INPOST
     public ResponseEntity<Integer> getDeliveriesWithActiveStatusesAndUpdate() {
         final List<Delivery> activeDeliveries = deliveryRepository
-                .findByDelivererAndDeliveryStatusIn(Deliverer.INPOST, StatusMapper.getActiveStatusesList());
+                .findByDelivererAndDeliveryStatusIn(Deliverer.INPOST, InPostStatusMapper.getActiveStatusesList());
         if (activeDeliveries == null || activeDeliveries.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

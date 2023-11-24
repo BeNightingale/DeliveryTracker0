@@ -3,15 +3,13 @@ package track.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import track.StatusMapper;
-import track.model.Deliverer;
+import track.InPostStatusMapper;
 import track.model.Delivery;
 import track.model.DeliveryStatus;
 import track.model.dto.DeliveryDto;
 import track.repository.DeliveryRepository;
 
 import java.util.List;
-import java.util.Map;
 
 import static track.model.Deliverer.INPOST;
 
@@ -45,11 +43,13 @@ public class DeliveryService {
             return 0;
         }
         log.info("Found delivery in database with deliveryNumber = {} and status {}.", delivery.getDeliveryNumber(), delivery.getDeliveryStatus());
-        final DeliveryStatus deliveryDtoStatus = StatusMapper.toDeliveryStatusMapper(deliveryDto.getDeliveryStatus());
+        // Mapowanie na status api DeliveryTracker.
+        final DeliveryStatus deliveryDtoStatus = InPostStatusMapper.toDeliveryStatusMapper(deliveryDto.getDeliveryStatus());
         log.debug("Delivery in InPost api with deliveryNumber = {} has status {}.", delivery.getDeliveryNumber(), delivery.getDeliveryStatus());
         if (deliveryDtoStatus == delivery.getDeliveryStatus())
             return 0;
         delivery.setDeliveryStatus(deliveryDtoStatus);
+        delivery.setStatusDescription(deliveryDto.getStatusDescription());
         deliveryRepository.save(delivery);
         return 1;
     }

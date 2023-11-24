@@ -9,12 +9,13 @@ import java.util.Map;
 
 import static track.model.DeliveryStatus.*;
 
-public class StatusMapper {
+public class InPostStatusMapper {
 
     // z InPost api object "origin_status": key = "name", value = "description"
-    public static final Map<String, String> inPostStatusMap = initInPostStatusesMap();
+    public static final Map<String, String> inPostLongDescriptionStatusMap = initInPostLongDescriptionStatusesMap();
+    public static final Map<String, String> inPostShortDescriptionStatusMap = initInPostShortDescriptionStatusesMap();
 
-    private StatusMapper() {
+    private InPostStatusMapper() {
         // do nothing
     }
 
@@ -52,7 +53,7 @@ public class StatusMapper {
         );
     }
 
-    private static Map<String, String> initInPostStatusesMap() {
+    private static Map<String, String> initInPostLongDescriptionStatusesMap() {
         final Map<String, String> statusesMap = new HashMap<>(53);
         statusesMap.put("created", "Przesyłka została utworzona, ale nie jest gotowa do nadania.");
         statusesMap.put("offers_prepared", "Oferty dla przesyłki zostały przygotowane.");
@@ -107,6 +108,64 @@ public class StatusMapper {
         statusesMap.put("stack_in_box_machine", "Kliknij i dowiedz się więcej na temat magazynowania paczek w tymczasowych automatach Paczkomat: https://inpost.pl/pomoc-czym-jest-magazynowanie-paczek-w-paczkomatach-tymczasowych");
         statusesMap.put("unstack_from_box_machine", "Czas na odbiór paczki magazynowanej w tymczasowym automacie Paczkomat upłynął. Paczka jest w drodze do pierwotnie wybranego automatu Paczkomat. Poinformujemy Cię, gdy będzie na miejscu.");
         statusesMap.put("stack_parcel_in_box_machine_pickup_time_expired", "Upłynął termin odebrania paczki z automatu Paczkomat tymczasowego, ale paczka nadal jest w nim magazynowana - czeka na przyjazd kuriera, który ją zabierze do pierwotnie wybranego automatu Paczkomat.");
+        return statusesMap;
+    }
+
+    private static Map<String, String> initInPostShortDescriptionStatusesMap() {
+        final Map<String, String> statusesMap = new HashMap<>(53);
+        statusesMap.put("created", "Przesyłka utworzona.");
+        statusesMap.put("offers_prepared", "Przygotowano oferty.");
+        statusesMap.put("offer_selected", "Oferta wybrana.");
+        statusesMap.put("confirmed", "Przygotowana przez Nadawcę.");
+        statusesMap.put("dispatched_by_sender", "Paczka nadana w automacie Paczkomat.");
+        statusesMap.put("collected_from_sender", "Odebrana od klienta.");
+        statusesMap.put("taken_by_courier", "Odebrana od Nadawcy.");
+        statusesMap.put("adopted_at_source_branch", "Przyjęta w oddziale InPost.");
+        statusesMap.put("sent_from_source_branch", "W trasie.");
+        statusesMap.put("ready_to_pickup_from_pok", "Czeka na odbiór w PaczkoPunkcie.");
+        statusesMap.put("ready_to_pickup_from_pok_registered", "Czeka na odbiór w PaczkoPunkcie.");
+        statusesMap.put("oversized", "Przesyłka ponadgabarytowa.");
+        statusesMap.put("adopted_at_sorting_center", "Przyjęta w Sortowni.");
+        statusesMap.put("sent_from_sorting_center", "Wysłana z Sortowni.");
+        statusesMap.put("adopted_at_target_branch", "Przyjęta w Oddziale Docelowym.");
+        statusesMap.put("out_for_delivery", "Przekazano do doręczenia.");
+        statusesMap.put("ready_to_pickup", "Umieszczona w automacie Paczkomat (odbiorczym).");
+        statusesMap.put("pickup_reminder_sent", "Przypomnienie o czekającej paczce.");
+        statusesMap.put("delivered", "Dostarczona.");
+        statusesMap.put("pickup_time_expired", "Upłynął termin odbioru.");
+        statusesMap.put("avizo", "Powrót do oddziału.");
+        statusesMap.put("claimed", "Zareklamowana w automacie Paczkomat.");
+        statusesMap.put("returned_to_sender", "Zwrot do nadawcy.");
+        statusesMap.put("canceled", "Anulowano etykietę.");
+        statusesMap.put("other", "Inny status.");
+        statusesMap.put("dispatched_by_sender_to_pok", "Nadana w PaczkoPunkcie.");
+        statusesMap.put("out_for_delivery_to_address", "W doręczeniu.");
+        statusesMap.put("pickup_reminder_sent_address", "W doręczeniu.");
+        statusesMap.put("rejected_by_receiver", "Odmowa przyjęcia.");
+        statusesMap.put("undelivered_wrong_address", "Brak możliwości doręczenia.");
+        statusesMap.put("undelivered_incomplete_address", "Brak możliwości doręczenia.");
+        statusesMap.put("undelivered_unknown_receiver", "Brak możliwości doręczenia.");
+        statusesMap.put("undelivered_cod_cash_receiver", "Brak możliwości doręczenia.");
+        statusesMap.put("taken_by_courier_from_pok", "W drodze do oddziału nadawczego InPost.");
+        statusesMap.put("undelivered", "Przekazanie do magazynu przesyłek niedoręczalnych.");
+        statusesMap.put("return_pickup_confirmation_to_sender", "Przygotowano dokumenty zwrotne.");
+        statusesMap.put("ready_to_pickup_from_branch", "Paczka nieodebrana – czeka w Oddziale.");
+        statusesMap.put("delay_in_delivery", "Możliwe opóźnienie doręczenia.");
+        statusesMap.put("redirect_to_box", "Przekierowano do automatu Paczkomat.");
+        statusesMap.put("canceled_redirect_to_box", "Anulowano przekierowanie.");
+        statusesMap.put("readdressed", "Przekierowano na inny adres.");
+        statusesMap.put("undelivered_no_mailbox", "Brak możliwości doręczenia.");
+        statusesMap.put("undelivered_not_live_address", "Brak możliwości doręczenia.");
+        statusesMap.put("undelivered_lack_of_access_letterbox", "Brak możliwości doręczenia.");
+        statusesMap.put("missing", "translation missing: pl_PL.statuses.missing.title");
+        statusesMap.put("stack_in_customer_service_point", "Paczka magazynowana w PaczkoPunkcie.");
+        statusesMap.put("stack_parcel_pickup_time_expired", "Upłynął termin odbioru paczki magazynowanej.");
+        statusesMap.put("unstack_from_customer_service_point", "W drodze do wybranego automatu Paczkomat.");
+        statusesMap.put("courier_avizo_in_customer_service_point", "Oczekuje na odbiór.");
+        statusesMap.put("taken_by_courier_from_customer_service_point", "Zwrócona do nadawcy.");
+        statusesMap.put("stack_in_box_machine", "Paczka magazynowana w tymczasowym automacie Paczkomat.");
+        statusesMap.put("unstack_from_box_machine", "Paczka w drodze do pierwotnie wybranego automatu Paczkomat.");
+        statusesMap.put("stack_parcel_in_box_machine_pickup_time_expired", "Upłynął termin odbioru paczki magazynowanej.");
         return statusesMap;
     }
 }

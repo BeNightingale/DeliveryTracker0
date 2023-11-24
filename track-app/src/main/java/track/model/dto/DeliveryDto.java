@@ -1,14 +1,15 @@
 package track.model.dto;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import track.StatusMapper;
+import track.InPostStatusMapper;
 import track.model.Deliverer;
 import track.model.Delivery;
 
 import java.util.List;
+
+import static track.model.DeliveryStatus.UNKNOWN;
 
 @ToString
 @EqualsAndHashCode
@@ -20,11 +21,14 @@ public class DeliveryDto {
     private int deliveryId;
     @NotNull
     private String deliveryNumber;
-    private String deliveryStatus; // status dokładnie tj. pobrany z api InPost (z jsona)
+    private String deliveryStatus; // status string dokładnie tj. pobrany z api dostawcy (z jsona); może być null -> będzie zmapowany na UNKNOWN
+    @Size(max = 3000)
+    private String statusDescription;
     @NotNull
     private Deliverer deliverer;
     @Size(max = 2000)
     private String deliveryDescription;
+    private Boolean finished;
     private List<StatusChange> statusChangesList;
 
 //    public DeliveryDto(Delivery delivery) {
@@ -38,9 +42,11 @@ public class DeliveryDto {
         final Delivery delivery = new Delivery();
         delivery.setDeliveryId(this.deliveryId);
         delivery.setDeliveryNumber(this.deliveryNumber);
-        delivery.setDeliveryStatus(StatusMapper.toDeliveryStatusMapper(this.deliveryStatus));
+        delivery.setDeliveryStatus(this.deliveryStatus == null ? UNKNOWN : InPostStatusMapper.toDeliveryStatusMapper(this.deliveryStatus));
+        delivery.setStatusDescription(this.statusDescription);
         delivery.setDeliverer(this.deliverer);
         delivery.setDeliveryDescription(this.deliveryDescription);
+        delivery.setFinished(this.finished);
         return delivery;
     }
 }

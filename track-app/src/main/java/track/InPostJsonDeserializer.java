@@ -51,11 +51,14 @@ public class InPostJsonDeserializer implements JsonDeserializer<DeliveryDto> {
                 statusChangesList.add(statusChange);
             }
         }
+        // Statusy od przewoźnika!
         return DeliveryDto.builder()
                 .deliveryNumber(deliveryNumber)
                 .deliveryStatus(status)
+                .statusDescription(InPostStatusMapper.inPostShortDescriptionStatusMap.get(status))
                 .statusChangesList(statusChangesList)
                 .deliverer(Deliverer.INPOST)
+                .finished("delivered".equals(status))
                 .build();
     }
 }
