@@ -3,7 +3,8 @@ package track.model.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import track.InPostStatusMapper;
+import track.mapper.InPostStatusMapper;
+import track.mapper.Mapper;
 import track.model.Deliverer;
 import track.model.Delivery;
 
@@ -42,7 +43,12 @@ public class DeliveryDto {
         final Delivery delivery = new Delivery();
         delivery.setDeliveryId(this.deliveryId);
         delivery.setDeliveryNumber(this.deliveryNumber);
-        delivery.setDeliveryStatus(this.deliveryStatus == null ? UNKNOWN : InPostStatusMapper.toDeliveryStatusMapper(this.deliveryStatus));
+        delivery.setDeliveryStatus(
+                this.deliveryStatus == null ?
+                        UNKNOWN :
+                        Mapper.mapperFunctions
+                                .get(this.deliverer)
+                                .apply(this.deliveryStatus));
         delivery.setStatusDescription(this.statusDescription);
         delivery.setDeliverer(this.deliverer);
         delivery.setDeliveryDescription(this.deliveryDescription);

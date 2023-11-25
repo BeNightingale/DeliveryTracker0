@@ -23,13 +23,13 @@ CREATE TABLE history
 );
 
 INSERT INTO deliveries(delivery_id, delivery_number, delivery_status, deliverer, finished)
-VALUES ('1', '12345678', 'DELIVERED', 'InPost', true);
+VALUES ('1', '12345678', 'DELIVERED', 'INPOST', true);
 INSERT INTO deliveries(delivery_id, delivery_number, delivery_status, deliverer, finished)
-VALUES ('2', '660166696359300112430272', 'ON_THE_ROAD', 'InPost', false);
+VALUES ('2', '660166696359300112430272', 'ON_THE_ROAD', 'INPOST', false);
 INSERT INTO deliveries(delivery_id, delivery_number, delivery_status, deliverer, delivery_description, finished)
-VALUES ('3', '605552596359300024984977', 'CONFIRMED', 'InPost', 'jacket', false);
+VALUES ('3', '605552596359300024984977', 'CONFIRMED', 'INPOST', 'jacket', false);
 INSERT INTO deliveries(delivery_id, delivery_number, delivery_status, deliverer, status_description, finished)
-VALUES ('4', '660166976359300115325076', 'NOT_FOUND', 'InPost', 'pen', false);
+VALUES ('4', '660166976359300115325076', 'NOT_FOUND', 'INPOST', 'pen', false);
 
 INSERT INTO history(id, delivery_id, delivery_number, delivery_status, status_description, status_change_datetime)
 VALUES ('1', '1', '12345678', 'DELIVERED', null, '2023-10-12 12:15:01');

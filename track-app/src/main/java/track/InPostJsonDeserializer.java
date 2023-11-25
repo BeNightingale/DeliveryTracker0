@@ -1,6 +1,7 @@
 package track;
 
 import com.google.gson.*;
+import track.mapper.InPostStatusMapper;
 import track.model.Deliverer;
 import track.model.dto.DeliveryDto;
 import track.model.dto.StatusChange;
@@ -51,7 +52,7 @@ public class InPostJsonDeserializer implements JsonDeserializer<DeliveryDto> {
                 statusChangesList.add(statusChange);
             }
         }
-        // Statusy od przewoźnika!
+        // Statusy od przewoźnika! Ma to, co przynosi json.
         return DeliveryDto.builder()
                 .deliveryNumber(deliveryNumber)
                 .deliveryStatus(status)

@@ -13,6 +13,7 @@ public enum DeliveryStatus {
     ON_THE_ROAD("The parcel continues its journey."),
     HANDED_OUT_FOR_DELIVERY("The parcel will be delivered to the recipient no later than the next working day. It can be delivered even late evening."),
     WAITING_IN_RECEIVING_PARCEL_LOCKER("Waiting for pick up."),
+    WAITING_FOR_COLLECTING("The parcel is waiting to be collected."),
     DELIVERED("The recipient received the parcel."),
     NOT_STANDARD_STAGE("Other not standard parcel journey stage.");
 

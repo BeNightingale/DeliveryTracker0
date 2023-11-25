@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import track.InPostJsonDeserializer;
 import track.PolishPostJsonDeserializer;
-import track.InPostStatusMapper;
+import track.mapper.InPostStatusMapper;
 import track.model.Deliverer;
 import track.model.Delivery;
 import track.model.dto.DeliveryDto;
@@ -228,6 +228,7 @@ public class DeliveryController {
             log.debug("Found active delivery in database with delivery_number = {}", delivery.getDeliveryNumber());
             final String json = HttpCaller.callHttpGetMethod(INPOST_ENDPOINT_URL, delivery.getDeliveryNumber());
             final DeliveryDto deliveryDto = inPostGson.fromJson(json, DeliveryDto.class);
+            // Uzupełniamy deliveryDto o informacje o przesyłce, które były już w bazie: id przesyłki i opis przesyłki (jeśli w bazie był).
             deliveryDto.setDeliveryId(delivery.getDeliveryId());
             deliveryDto.setDeliveryDescription(delivery.getDeliveryDescription());
             deliveryDtoList.add(deliveryDto);
