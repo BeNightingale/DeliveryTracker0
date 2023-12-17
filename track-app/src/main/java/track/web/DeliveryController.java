@@ -23,10 +23,10 @@ import track.repository.DeliveryRepository;
 import track.service.DeliveryService;
 import track.service.HttpCaller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
+
+import static track.model.Deliverer.INPOST;
+import static track.model.Deliverer.POCZTA_POLSKA;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +43,10 @@ public class DeliveryController {
     private final MessageSource messageSource;
     private final Gson inPostGson = initGson(new InPostJsonDeserializer());
     private final Gson polishPostGson = initGson(new PolishPostJsonDeserializer());
+    private final Map<Deliverer, Gson> gsonsMap = Map.of(
+            INPOST, inPostGson,
+            POCZTA_POLSKA, polishPostGson
+    );
 
 
     // ------------ operacje dotyczące tylko bazy danych aplikacji DeliveryTracker ---------------------
@@ -71,7 +75,7 @@ public class DeliveryController {
      * @param errors      błędy walidacyjne pól obiektu deliveryDto
      * @param httpRequest zapytanie
      * @return zwraca obiekt ResponseEntity z obiektem wpisanym do bazy w przypadku powodzenia operacji i kodem odpowiedzi 200,
-     * w przeciwnym razie wiadomość dotyczącą błędu i kod 400, 406 lub 500 w zależności od rodzaju błędu
+     * w przeciwnym razie wiadomość dotyczącą błędu i kod 400, 403 lub 500 w zależności od rodzaju błędu
      */
     @PostMapping("/deliveries")
     public ResponseEntity<Object> addDelivery(
@@ -158,25 +162,25 @@ public class DeliveryController {
     /**
      * Wyszukuje w bazie Poczty Polskiej przesyłkę o określonym numerze.
      *
-     * @param requestPolishPost obiekt z informacjami o języku, numerze przesyłki
-     *                          i addPostOfficeInfo (czy odpowiedź ma zawierać informacje o przesyłce)
+     * @param deliveryNumber numer przesyłki (umieszczany w polu przesyłanego obiektu z dodatkowymi informacjami o języku
+     *                       i addPostOfficeInfo (czy odpowiedź ma zawierać informacje o przesyłce)
      * @return json z informacjami o przesyłce
      */
-    @GetMapping("/json_polish_deliveries")
-    public String getJsonDeliveryInformationFromPolishPost(@RequestBody PolishPostRequest requestPolishPost) {
-        return HttpCaller.callHttpPostMethod(POLISH_POST_ENDPOINT_URL, requestPolishPost);
+    @GetMapping("/json_polish_deliveries/{deliveryNumber}")
+    public String getJsonDeliveryInformationFromPolishPost(@PathVariable String deliveryNumber) {
+        return HttpCaller.callHttpPostMethod(HttpCaller.endpointUrlsMap.get(POCZTA_POLSKA), deliveryNumber);
     }
 
     /**
      * Wyszukuje w bazie Poczty Polskiej przesyłkę o określonym numerze.
      *
-     * @param requestPolishPost obiekt z informacjami o języku, numerze przesyłki
-     *                          i addPostOfficeInfo (czy odpowiedź ma zawierać informacje o przesyłce)
+     * @param deliveryNumber numer przesyłki (umieszczany w polu przesyłanego obiektu z dodatkowymi informacjami o języku
+     *                       i addPostOfficeInfo (czy odpowiedź ma zawierać informacje o przesyłce)
      * @return obiekt DeliveryDto z informacjami o przesyłce z listą - historią jej statusów Poczty Polskiej
      */
-    @GetMapping("/polish_deliveries")
-    public DeliveryDto getDeliveryInformationFromPolishPost(@RequestBody PolishPostRequest requestPolishPost) {
-        final String json = HttpCaller.callHttpPostMethod(POLISH_POST_ENDPOINT_URL, requestPolishPost);
+    @GetMapping("/polish_deliveries/{deliveryNumber}")
+    public DeliveryDto getDeliveryInformationFromPolishPost(@PathVariable String deliveryNumber) {
+        final String json = HttpCaller.callHttpPostMethod(HttpCaller.endpointUrlsMap.get(POCZTA_POLSKA), deliveryNumber);
         return polishPostGson.fromJson(json, DeliveryDto.class);
     }
 
@@ -214,25 +218,49 @@ public class DeliveryController {
      */
     @GetMapping("/current_statuses") // aktualizuje w bazie statusy wszystkim aktywnym przesyłkom INPOST
     public ResponseEntity<Integer> getDeliveriesWithActiveStatusesAndUpdate() {
-        final List<Delivery> activeDeliveries = deliveryRepository
-                .findByDelivererAndDeliveryStatusIn(Deliverer.INPOST, InPostStatusMapper.getActiveStatusesList());
-        if (activeDeliveries == null || activeDeliveries.isEmpty()) {
+        final List<Delivery> inPostActiveDeliveries = deliveryRepository
+                .findByDelivererAndDeliveryStatusIn(INPOST, InPostStatusMapper.getActiveStatusesList());
+        final List<Delivery> polishPostActiveDeliveries = deliveryRepository
+                .findByDelivererAndFinishedIsFalse(POCZTA_POLSKA);
+        if ((inPostActiveDeliveries == null || inPostActiveDeliveries.isEmpty()) && (polishPostActiveDeliveries == null || polishPostActiveDeliveries.isEmpty())) {
             return ResponseEntity.noContent().build();
         }
-        log.debug("Active INPOST deliveries: {}.", activeDeliveries);
-        final List<DeliveryDto> deliveryDtoList = new ArrayList<>();// będzie mieć statusy InPosta
-        for (Delivery delivery : activeDeliveries) {
-            if (delivery == null) {
-                continue;
-            }
-            log.debug("Found active delivery in database with delivery_number = {}", delivery.getDeliveryNumber());
-            final String json = HttpCaller.callHttpGetMethod(INPOST_ENDPOINT_URL, delivery.getDeliveryNumber());
-            final DeliveryDto deliveryDto = inPostGson.fromJson(json, DeliveryDto.class);
-            // Uzupełniamy deliveryDto o informacje o przesyłce, które były już w bazie: id przesyłki i opis przesyłki (jeśli w bazie był).
-            deliveryDto.setDeliveryId(delivery.getDeliveryId());
-            deliveryDto.setDeliveryDescription(delivery.getDeliveryDescription());
-            deliveryDtoList.add(deliveryDto);
-        }
+        final List<DeliveryDto> deliveryDtoList = new ArrayList<>();// będzie mieć statusy delivera
+        deliveryDtoList.addAll(findActiveDeliversUpdatesForDeliver(INPOST, inPostActiveDeliveries));
+        deliveryDtoList.addAll(findActiveDeliversUpdatesForDeliver(POCZTA_POLSKA, polishPostActiveDeliveries));
+
+
+//
+//        if (inPostActiveDeliveries != null && !inPostActiveDeliveries.isEmpty()) {
+//            log.debug("Active INPOST deliveries: {}.", inPostActiveDeliveries);
+//            for (Delivery delivery : inPostActiveDeliveries) {
+//                if (delivery == null) {
+//                    continue;
+//                }
+//                log.debug("Found active delivery in database with delivery_number = {}", delivery.getDeliveryNumber());
+//                final String json = HttpCaller.callHttpGetMethod(INPOST_ENDPOINT_URL, delivery.getDeliveryNumber());
+//                final DeliveryDto deliveryDto = inPostGson.fromJson(json, DeliveryDto.class);
+//                // Uzupełniamy deliveryDto o informacje o przesyłce, które były już w bazie: id przesyłki i opis przesyłki (jeśli w bazie był).
+//                deliveryDto.setDeliveryId(delivery.getDeliveryId());
+//                deliveryDto.setDeliveryDescription(delivery.getDeliveryDescription());
+//                deliveryDtoList.add(deliveryDto);
+//            }
+//        }
+//        if (inPostActiveDeliveries != null && !inPostActiveDeliveries.isEmpty())
+//        log.debug("Active INPOST deliveries: {}.", inPostActiveDeliveries);
+//        for (Delivery delivery : inPostActiveDeliveries) {
+//            if (delivery == null) {
+//                continue;
+//            }
+//            log.debug("Found active delivery in database with delivery_number = {}", delivery.getDeliveryNumber());
+//            final String json = HttpCaller.callHttpGetMethod(INPOST_ENDPOINT_URL, delivery.getDeliveryNumber());
+//            final DeliveryDto deliveryDto = inPostGson.fromJson(json, DeliveryDto.class);
+//            // Uzupełniamy deliveryDto o informacje o przesyłce, które były już w bazie: id przesyłki i opis przesyłki (jeśli w bazie był).
+//            deliveryDto.setDeliveryId(delivery.getDeliveryId());
+//            deliveryDto.setDeliveryDescription(delivery.getDeliveryDescription());
+//            deliveryDtoList.add(deliveryDto);
+//        }
+//        log.debug("Active POCZTA_POLSKA deliveries: {}.", polishPostActiveDeliveries);
         final Integer rowsChanged = deliveryService.updateActiveDeliveriesStatuses(deliveryDtoList);
         return ResponseEntity.ok().body(rowsChanged);
     }
@@ -244,4 +272,27 @@ public class DeliveryController {
                 .disableHtmlEscaping()
                 .create();
     }
+
+    private List<DeliveryDto> findActiveDeliversUpdatesForDeliver(Deliverer deliverer, List<Delivery> activeDeliveriesFromDatabase) {
+        if (activeDeliveriesFromDatabase == null || activeDeliveriesFromDatabase.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<DeliveryDto> deliveryDtoList = new ArrayList<>();// będzie mieć statusy delivera
+        log.debug("Active {} deliveries: {}.", deliverer, activeDeliveriesFromDatabase);
+        activeDeliveriesFromDatabase.stream()
+                .filter(Objects::nonNull)
+                .forEach(delivery -> {
+                    log.debug("Found active delivery in database with delivery_number = {}", delivery.getDeliveryNumber());
+                    final String json = HttpCaller.callersMap
+                            .get(deliverer)
+                            .apply(
+                                    HttpCaller.endpointUrlsMap.get(deliverer), delivery.getDeliveryNumber()
+                            );
+                    final DeliveryDto deliveryDto = gsonsMap.get(deliverer).fromJson(json, DeliveryDto.class);
+                    deliveryDto.setDeliveryId(delivery.getDeliveryId());//TODO, czy koniecznie potrzebne??
+                    deliveryDtoList.add(deliveryDto);
+                });
+        return deliveryDtoList;
+    }
+
 }

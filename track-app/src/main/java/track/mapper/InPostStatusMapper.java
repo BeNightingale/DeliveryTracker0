@@ -50,7 +50,7 @@ public class InPostStatusMapper {
 
     public static List<DeliveryStatus> getActiveStatusesList() {
         return List.of(
-                NOT_FOUND, CONFIRMED, HANDED_TO_SHIPPING_COMPANY,IN_SHIPPING_PARCEL_LOCKER,
+                UNKNOWN, NOT_FOUND, CONFIRMED, HANDED_TO_SHIPPING_COMPANY,IN_SHIPPING_PARCEL_LOCKER,
                 ON_THE_ROAD, HANDED_OUT_FOR_DELIVERY, WAITING_IN_RECEIVING_PARCEL_LOCKER, NOT_STANDARD_STAGE
         );
     }

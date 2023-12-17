@@ -28,9 +28,7 @@ public class PolishPostJsonDeserializer implements JsonDeserializer<DeliveryDto>
         final String deliveryNumber = getAsStringOrNull(numberElem);
         final JsonObject mailInfoObject = jsonObject.getAsJsonObject("mailInfo");
         final JsonElement finishedElem = mailInfoObject == null ? null : mailInfoObject.get("finished");
-        final Boolean finished = finishedElem == null ? null : finishedElem.getAsBoolean();
-        // TODO bezpieczniej jest wybrac status
-        // Statusy (name) są uporządkowane od najstarszego do najbliższego obecnej chwili; najświeższy status jest ostatni na liście.
+        final boolean finished = finishedElem != null && finishedElem.getAsBoolean();
         final JsonArray eventsArray = mailInfoObject == null ? null : mailInfoObject.getAsJsonArray("events");
         List<StatusChange> statusChangesList;
         if (eventsArray == null) {
@@ -60,7 +58,7 @@ public class PolishPostJsonDeserializer implements JsonDeserializer<DeliveryDto>
                         .get(statusChangesList.size() - 1)
                         .getStatus();
         // Wpisuje status przekazany przez Pocztę Polską = krótki opis statusu.
-        // Statusy maja nazwy tj. statusy w Poczty Polskiej.
+        // Statusy mają nazwy tj. statusy Poczty Polskiej.
         return DeliveryDto.builder()
                 .deliveryNumber(deliveryNumber)
                 .deliveryStatus(currentStatus)

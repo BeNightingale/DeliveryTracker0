@@ -18,7 +18,7 @@ public class Mapper {
     private static final Function<String, DeliveryStatus> inPostMapFunction = InPostStatusMapper::toDeliveryStatusMapper;
     private static final Function<String, DeliveryStatus> polishPostMapFunction = PolishPostStatusMapper::toDeliveryStatusMapper;
 
-    public static final Map<Deliverer, Function<String, DeliveryStatus>> mapperFunctions = Map.of(
+    public static final Map<Deliverer, Function<String, DeliveryStatus>> statusMapperFunctions = Map.of(
             INPOST, inPostMapFunction,
             POCZTA_POLSKA, polishPostMapFunction
     );

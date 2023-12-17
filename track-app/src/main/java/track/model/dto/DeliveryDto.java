@@ -3,7 +3,6 @@ package track.model.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import track.mapper.InPostStatusMapper;
 import track.mapper.Mapper;
 import track.model.Deliverer;
 import track.model.Delivery;
@@ -29,7 +28,7 @@ public class DeliveryDto {
     private Deliverer deliverer;
     @Size(max = 2000)
     private String deliveryDescription;
-    private Boolean finished;
+    private boolean finished;
     private List<StatusChange> statusChangesList;
 
 //    public DeliveryDto(Delivery delivery) {
@@ -46,7 +45,7 @@ public class DeliveryDto {
         delivery.setDeliveryStatus(
                 this.deliveryStatus == null ?
                         UNKNOWN :
-                        Mapper.mapperFunctions
+                        Mapper.statusMapperFunctions
                                 .get(this.deliverer)
                                 .apply(this.deliveryStatus));
         delivery.setStatusDescription(this.statusDescription);

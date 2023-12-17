@@ -7,7 +7,7 @@ CREATE TABLE deliveries
     status_description          VARCHAR(3000), ### krótki polski w InPoSt
     deliverer                   VARCHAR(100) NOT NULL,
     delivery_description        VARCHAR(2000),
-    finished                    BOOLEAN,
+    finished                    BOOLEAN NOT NULL,
     PRIMARY KEY (delivery_id)
 );
 

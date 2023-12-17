@@ -21,6 +21,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Integer> {
     List<Delivery> findByDeliveryStatusIn(List<DeliveryStatus> deliveryStatusList);
 
     List<Delivery> findByDelivererAndDeliveryStatusIn(@NonNull Deliverer deliverer, List<DeliveryStatus> deliveryStatusList);
+    List<Delivery> findByDelivererAndFinishedIsFalse(@NonNull Deliverer deliverer);
 
     Delivery findDeliveryByDeliveryNumberAndDeliverer(@NonNull String deliveryNumber, @NonNull Deliverer deliverer);
 
