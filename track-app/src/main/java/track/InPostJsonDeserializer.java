@@ -9,6 +9,7 @@ import track.model.dto.StatusChange;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static track.DeserializerHelper.getAsStringOrNull;
@@ -51,6 +52,7 @@ public class InPostJsonDeserializer implements JsonDeserializer<DeliveryDto> {
                 );
                 statusChangesList.add(statusChange);
             }
+            statusChangesList.sort(Comparator.comparing(StatusChange::getStatusChangeTimeStamp));
         }
         // Statusy od przewoźnika! Ma to, co przynosi json.
         return DeliveryDto.builder()

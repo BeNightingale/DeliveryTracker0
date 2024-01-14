@@ -212,7 +212,7 @@ public class DeliveryController {
 
     /**
      * Pobiera z tabeli deliveries numery wszystkich przesyłek o aktywnych statusach (czyli przesyłek niedostarczonych),
-     * a następnie - na podstawie informacji pobranych z api InPost - aktualizuje im statusy.
+     * a następnie - na podstawie informacji pobranych z api InPost lub api Poczty Polskiej — aktualizuje im statusy.
      *
      * @return liczba zmienionych wierszy w tabeli deliveries
      */
@@ -222,7 +222,11 @@ public class DeliveryController {
                 .findByDelivererAndDeliveryStatusIn(INPOST, InPostStatusMapper.getActiveStatusesList());
         final List<Delivery> polishPostActiveDeliveries = deliveryRepository
                 .findByDelivererAndFinishedIsFalse(POCZTA_POLSKA);
-        if ((inPostActiveDeliveries == null || inPostActiveDeliveries.isEmpty()) && (polishPostActiveDeliveries == null || polishPostActiveDeliveries.isEmpty())) {
+        if (
+                (inPostActiveDeliveries == null || inPostActiveDeliveries.isEmpty())
+                &&
+                (polishPostActiveDeliveries == null || polishPostActiveDeliveries.isEmpty())
+        ) {
             return ResponseEntity.noContent().build();
         }
         final List<DeliveryDto> deliveryDtoList = new ArrayList<>();// będzie mieć statusy delivera
@@ -289,7 +293,7 @@ public class DeliveryController {
                                     HttpCaller.endpointUrlsMap.get(deliverer), delivery.getDeliveryNumber()
                             );
                     final DeliveryDto deliveryDto = gsonsMap.get(deliverer).fromJson(json, DeliveryDto.class);
-                    deliveryDto.setDeliveryId(delivery.getDeliveryId());//TODO, czy koniecznie potrzebne??
+                    deliveryDto.setDeliveryId(delivery.getDeliveryId());//TODO, czy koniecznie potrzebne?? ; jednak wygodnie jak ma - do wyszukiwania w tabeli historia - nie trzeba przekazywać osobno tej liczby
                     deliveryDtoList.add(deliveryDto);
                 });
         return deliveryDtoList;

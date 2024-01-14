@@ -1,17 +1,15 @@
 package track.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+import track.model.dto.DeliveryDto;
 
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Setter
 @Entity
 @ToString
 @Table(name = "history")
@@ -23,7 +21,7 @@ public class History {
     private int id;
     @Column(name="delivery_id")
     private int deliveryId;
-    @Column(name="delivery_number") // powinno być prawie unikatowe i niepuste!
+    @Column(name="delivery_number") // Powinno być prawie unikatowe i niepuste, ale dla różnych dostawców może się powtórzyć.
     private String deliveryNumber;
     @Enumerated(value = EnumType.STRING)
     @Column(name="delivery_status")
@@ -32,4 +30,12 @@ public class History {
     private String statusDescription;
     @Column(name="status_change_datetime")
     private LocalDateTime statusChangeDatetime;
+
+//    public History createHistoryFromDeliveryDtoInfo(int deliveryId, DeliveryDto deliveryDto) {
+//        this.deliveryId = deliveryId;
+//        this.deliveryNumber = deliveryDto.getDeliveryNumber();
+//        this.deliveryStatus = deliveryDto.;
+//        this.statusDescription = statusDescription;
+//        this.statusChangeDatetime = statusChangeDatetime;
+//    }
 }
